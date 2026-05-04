@@ -7,7 +7,7 @@
 ## 🖼 診断デモ
 | トップ画面 | 診断結果（エビデンス表示） | 開発者ログ (v0.1.0-mvp) |
 | :---: | :---: | :---: |
-| <img src="![evidence1](./Works/S1.jpg)" width="200"> | <img src="![evidence2](./Works/S2.jpg)" width="200"> | <img src="![evidence3](./Works/S3.png)" width="200"> |
+| <img src="./Works/S1.jpg" width="200"> | <img src="./Works/S2.jpg" width="200"> | <img src="./Works/S3.png" width="200"> |
 | 直感的なUI | 根拠条文を動的に表示 | 実機での動作・通信確認 |
 
 ## ✨ 特徴・機能
