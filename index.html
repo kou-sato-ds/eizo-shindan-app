@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <!-- ============================================================ -->
+  <!-- 文字コードとビューポート設定                                  -->
+  <!-- ------------------------------------------------------------ -->
+  <!-- LIFFはモバイル（LINEアプリ内）での動作が前提のため、         -->
+  <!-- viewport で initial-scale=1.0 を設定し拡大縮小を防ぐ          -->
+  <!-- maximum-scale=1.0 を入れることで、フォーム入力時の           -->
+  <!-- 意図しないズームも抑制できる                                 -->
+  <!-- ============================================================ -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+  <title>映送特 自動診断</title>
+
+  <!-- ============================================================ -->
+  <!-- LIFF SDK の読み込み                                          -->
+  <!-- ------------------------------------------------------------ -->
+  <!-- LINE公式CDNから読み込む。バージョン固定により本番の挙動を   -->
+  <!-- 安定させる。defer属性は body 内の自前スクリプトとの順序を    -->
+  <!-- 保証するために必須                                           -->
+  <!-- ============================================================ -->
+  <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js" defer></script>
+
+  <!-- 自前のスタイルシートとスクリプト -->
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <!-- ============================================================ -->
+  <!-- ルートコンテナ                                                -->
+  <!-- ------------------------------------------------------------ -->
+  <!-- アプリ全体を囲む。最大幅を制限することで、PCで開かれた       -->
+  <!-- ときも意図しない横長レイアウトにならないようにする           -->
+  <!-- ============================================================ -->
+  <div id="app" class="app-container">
+
+    <!-- ===== ヘッダー：常時表示 ===== -->
+    <header class="app-header">
+      <h1 class="app-title">映送特 自動診断</h1>
+      <p class="app-subtitle">行政書士による事前チェックツール</p>
+    </header>
+
+    <!-- ===== 挨拶エリア：LIFF初期化後にdisplayNameを表示 ===== -->
+    <!-- 初期状態は非表示。JS側で表示制御する -->
+    <div id="greeting" class="greeting-area" hidden>
+      <p class="greeting-text">
+        <span id="user-name" class="user-name">ゲスト</span>さん、こんにちは
+      </p>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- スクリーン1: ウェルカム画面                                  -->
+    <!-- ------------------------------------------------------------ -->
+    <!-- screen クラスを持つ div を画面ごとに用意し、JSの             -->
+    <!-- showScreen() 関数で表示切替する。                            -->
+    <!-- 初期表示はこのウェルカム画面のみ active クラスをつける       -->
+    <!-- ============================================================ -->
+    <section id="screen-welcome" class="screen active">
+      <div class="screen-content">
+        <h2 class="screen-heading">事業計画の事前診断</h2>
+        <p class="lead-text">
+          映像送信型性風俗特殊営業の届出にあたり、東京都条例・規則に基づく
+          適合性を5つの質問で簡易診断します。
+        </p>
+
+        <!-- 注意書き：法的免責 -->
+        <!-- 行政書士法に抵触しない範囲を明示することは実務上必須 -->
+        <div class="notice-box">
+          <p class="notice-title">本診断のご利用にあたって</p>
+          <ul class="notice-list">
+            <li>本診断は事前の参考情報を提供するものです</li>
+            <li>最終的な届出可否は所轄警察署の判断に委ねられます</li>
+            <li>結果は個別案件の法的助言ではありません</li>
+          </ul>
+        </div>
+
+        <!-- 開始ボタン：data属性で遷移先screen IDを指定 -->
+        <!-- これにより、JS側で event.target.dataset.next を読むだけで -->
+        <!-- 画面遷移できる宣言的な構造になる -->
+        <button class="btn btn-primary" data-action="start">
+          診断を開始する
+        </button>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- スクリーン2: 質問画面                                        -->
+    <!-- ------------------------------------------------------------ -->
+    <!-- 質問は1問1画面ではなく、同じスクリーン内のテキストを        -->
+    <!-- JSで動的に書き換える方式。SPA的なUXで遷移が速い            -->
+    <!-- ============================================================ -->
+    <section id="screen-question" class="screen">
+      <div class="screen-content">
+
+        <!-- プログレスバー：現在の進捗を視覚化 -->
+        <!-- aria-valuenow を更新することでスクリーンリーダーにも対応 -->
+        <div class="progress-wrapper">
+          <div class="progress-info">
+            <span id="progress-text">質問 1 / 5</span>
+          </div>
+          <div class="progress-bar" role="progressbar"
+               aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <div id="progress-fill" class="progress-fill" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <!-- 質問本体：JS側で textContent を書き換える -->
+        <div class="question-box">
+          <p id="question-category" class="question-category">用途地域について</p>
+          <h2 id="question-text" class="question-text">
+            （ここに質問文がJSで動的に挿入されます）
+          </h2>
+          <p id="question-hint" class="question-hint"></p>
+        </div>
+
+        <!-- 回答ボタン：はい/いいえの2択 -->
+        <!-- モバイルでタップしやすいよう大きく、十分な縦間隔を確保 -->
+        <div class="answer-buttons">
+          <button class="btn btn-answer btn-yes" data-answer="yes">
+            <span class="btn-icon">✓</span>
+            <span class="btn-label">はい</span>
+          </button>
+          <button class="btn btn-answer btn-no" data-answer="no">
+            <span class="btn-icon">✕</span>
+            <span class="btn-label">いいえ</span>
+          </button>
+          <button class="btn btn-answer btn-unknown" data-answer="unknown">
+            <span class="btn-icon">?</span>
+            <span class="btn-label">わからない</span>
+          </button>
+        </div>
+
+        <!-- 戻るボタン：1つ前の質問に戻る -->
+        <!-- 質問1の場合は無効化される（JS側で制御） -->
+        <button id="btn-back" class="btn btn-text" data-action="back">
+          ← 前の質問に戻る
+        </button>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- スクリーン3: 送信中画面（ローディング）                      -->
+    <!-- ------------------------------------------------------------ -->
+    <!-- バックエンドAPI呼び出し中の待機画面。                        -->
+    <!-- ユーザーに「処理中」を明示することで、二重送信を防ぐ        -->
+    <!-- ============================================================ -->
+    <section id="screen-loading" class="screen">
+      <div class="screen-content text-center">
+        <div class="loading-spinner" aria-label="読み込み中"></div>
+        <h2 class="screen-heading">診断中...</h2>
+        <p class="lead-text">
+          条例・規則に基づき判定しています。<br>
+          しばらくお待ちください。
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- スクリーン4: 結果画面                                        -->
+    <!-- ------------------------------------------------------------ -->
+    <!-- バックエンドからのレスポンスを表示。                         -->
+    <!-- verdict（総合判定）と checks（個別チェック）の両方を表示    -->
+    <!-- ============================================================ -->
+    <section id="screen-result" class="screen">
+      <div class="screen-content">
+
+        <!-- 総合判定バッジ：JS側でクラスと文言を切替 -->
+        <div id="verdict-badge" class="verdict-badge">
+          <span id="verdict-icon" class="verdict-icon">●</span>
+          <span id="verdict-label" class="verdict-label">判定中</span>
+        </div>
+
+        <!-- 総合判定の説明文 -->
+        <div class="verdict-message-box">
+          <p id="verdict-message" class="verdict-message"></p>
+        </div>
+
+        <!-- 個別チェック結果リスト -->
+        <h3 class="section-heading">判定の根拠（証跡）</h3>
+        <div id="checks-list" class="checks-list">
+          <!-- JS側で <div class="check-item"> を動的に挿入 -->
+        </div>
+
+        <!-- 信頼度表示 -->
+        <div class="confidence-box">
+          <span class="confidence-label">判定の信頼度：</span>
+          <span id="confidence-value" class="confidence-value">-</span>
+        </div>
+
+        <!-- アクションボタン群 -->
+        <div class="result-actions">
+          <button class="btn btn-primary" data-action="restart">
+            最初からやり直す
+          </button>
+          <button class="btn btn-secondary" data-action="contact">
+            行政書士に相談する
+          </button>
+        </div>
+
+        <!-- フッター注釈 -->
+        <p class="footer-note">
+          診断ID: <span id="request-id" class="request-id">-</span>
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- スクリーン5: エラー画面                                      -->
+    <!-- ------------------------------------------------------------ -->
+    <!-- API失敗時のフォールバック。技術的詳細は出さず、             -->
+    <!-- ユーザーが取れる行動だけを提示する                          -->
+    <!-- ============================================================ -->
+    <section id="screen-error" class="screen">
+      <div class="screen-content text-center">
+        <div class="error-icon">⚠</div>
+        <h2 class="screen-heading">診断を完了できませんでした</h2>
+        <p id="error-message" class="lead-text">
+          通信エラーが発生しました。電波状況をご確認のうえ、再度お試しください。
+        </p>
+        <button class="btn btn-primary" data-action="restart">
+          最初からやり直す
+        </button>
+      </div>
+    </section>
+
+  </div><!-- /#app -->
+</body>
+</html>

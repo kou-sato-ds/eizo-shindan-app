@@ -1,0 +1,679 @@
+/* ============================================================
+ * 映送特診断LIFFアプリ スタイルシート
+ * ------------------------------------------------------------
+ * デザイン方針:
+ *   - 行政書士実務に相応しい清潔感と信頼感
+ *   - メインカラー: 濃紺 (#1a3a6c) - 法務・行政の伝統色
+ *   - アクセント: 白 (#ffffff) と薄いグレー (#f5f7fa)
+ *   - 警告色: 渋い赤 (#c0392b) - 派手すぎない
+ *   - 成功色: 深い緑 (#27744a)
+ *   - 角丸は控えめ (4-8px) で堅さを残す
+ *   - フォントは游ゴシック系で読みやすさ重視
+ * ============================================================ */
+
+/* ============================================================
+ * CSS変数（カスタムプロパティ）でテーマカラーを集約管理
+ * ------------------------------------------------------------
+ * これによりブランドカラーを変更したいときに :root だけ
+ * 修正すれば全体に反映される。DE視点では「設定値の一元化」
+ * という保守性確保のテクニック
+ * ============================================================ */
+:root {
+  /* メインカラー：濃紺系の3階調 */
+  --color-primary: #1a3a6c;          /* 基調の濃紺 */
+  --color-primary-dark: #0f2547;     /* ホバー時の濃い紺 */
+  --color-primary-light: #2c5494;    /* 補助の青紺 */
+
+  /* ニュートラルカラー */
+  --color-white: #ffffff;
+  --color-gray-50: #f5f7fa;          /* 背景の薄いグレー */
+  --color-gray-100: #e8ecf1;         /* ボーダー */
+  --color-gray-200: #d0d7e2;
+  --color-gray-500: #6b7c93;         /* 補助テキスト */
+  --color-gray-700: #2d3e52;         /* 本文テキスト */
+  --color-gray-900: #1a202c;         /* 見出し */
+
+  /* セマンティックカラー（判定結果用） */
+  --color-success: #27744a;          /* 適合 */
+  --color-success-bg: #e8f5ed;
+  --color-warning: #b8860b;          /* 条件付 */
+  --color-warning-bg: #fdf6e3;
+  --color-danger: #c0392b;           /* 不適合 */
+  --color-danger-bg: #fcebea;
+  --color-info: #5a6c80;             /* 情報 */
+  --color-info-bg: #eef2f7;
+
+  /* タイポグラフィ */
+  --font-family-base: -apple-system, BlinkMacSystemFont, "Hiragino Sans",
+                      "Hiragino Kaku Gothic ProN", "游ゴシック", YuGothic,
+                      "Yu Gothic", Meiryo, sans-serif;
+
+  /* スペーシング（8pxグリッド） */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-8: 48px;
+
+  /* 角丸 */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  /* シャドウ */
+  --shadow-sm: 0 1px 2px rgba(26, 58, 108, 0.08);
+  --shadow-md: 0 4px 12px rgba(26, 58, 108, 0.12);
+}
+
+/* ============================================================
+ * リセット & ベース
+ * ------------------------------------------------------------
+ * ブラウザデフォルトの margin/padding をリセットして
+ * クロスブラウザの差異を吸収
+ * ============================================================ */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  /* iOS のフォントサイズ自動調整を無効化 */
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-family-base);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--color-gray-700);
+  background-color: var(--color-gray-50);
+  /* タップ時のハイライトを消す（モバイルUX向上） */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ============================================================
+ * アプリコンテナ
+ * ------------------------------------------------------------
+ * モバイル前提だが、PCで開かれた場合も中央寄せで見やすく
+ * ============================================================ */
+.app-container {
+  max-width: 480px;
+  min-height: 100vh;
+  margin: 0 auto;
+  background-color: var(--color-white);
+  /* スマホでも左右に余白を残すため、内側でパディング */
+  display: flex;
+  flex-direction: column;
+}
+
+/* ============================================================
+ * ヘッダー
+ * ============================================================ */
+.app-header {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+  color: var(--color-white);
+  padding: var(--space-5) var(--space-4);
+  text-align: center;
+  /* sticky にすることでスクロール時もヘッダーが残る */
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.app-title {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.app-subtitle {
+  font-size: 12px;
+  opacity: 0.85;
+  margin-top: var(--space-1);
+}
+
+/* ============================================================
+ * 挨拶エリア
+ * ============================================================ */
+.greeting-area {
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--color-info-bg);
+  border-bottom: 1px solid var(--color-gray-100);
+}
+
+.greeting-text {
+  font-size: 14px;
+  color: var(--color-gray-700);
+}
+
+.user-name {
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+/* ============================================================
+ * スクリーン制御
+ * ------------------------------------------------------------
+ * デフォルトで非表示にし、active クラスを持つものだけ表示
+ * これにより JS 側は単純なクラス操作で画面遷移できる
+ * ============================================================ */
+.screen {
+  display: none;
+  /* フェードイン用のtransition */
+  animation: fadeIn 0.25s ease-out;
+}
+
+.screen.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.screen-content {
+  padding: var(--space-5) var(--space-4);
+  /* PCで見たときに縦に間延びしすぎないよう、最低の高さを確保 */
+  min-height: calc(100vh - 120px);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ============================================================
+ * 共通テキストスタイル
+ * ============================================================ */
+.screen-heading {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--color-gray-900);
+  margin-bottom: var(--space-4);
+  /* 紺色の左ボーダーで法務文書風の堅さを出す */
+  border-left: 4px solid var(--color-primary);
+  padding-left: var(--space-3);
+}
+
+.section-heading {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-gray-900);
+  margin: var(--space-5) 0 var(--space-3);
+}
+
+.lead-text {
+  font-size: 15px;
+  color: var(--color-gray-700);
+  margin-bottom: var(--space-4);
+}
+
+.text-center {
+  text-align: center;
+}
+
+/* ============================================================
+ * 注意書きボックス
+ * ============================================================ */
+.notice-box {
+  background-color: var(--color-warning-bg);
+  border: 1px solid #ecd99a;
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.notice-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #8a6914;
+  margin-bottom: var(--space-2);
+}
+
+.notice-list {
+  list-style: none;
+  font-size: 13px;
+  color: var(--color-gray-700);
+}
+
+.notice-list li {
+  padding-left: var(--space-3);
+  position: relative;
+  margin-bottom: var(--space-1);
+}
+
+.notice-list li::before {
+  content: "・";
+  position: absolute;
+  left: 0;
+  color: #8a6914;
+}
+
+/* ============================================================
+ * ボタン共通スタイル
+ * ------------------------------------------------------------
+ * モバイルでタップしやすいよう、最小高さ48pxを確保
+ * （AppleのHIGとMaterial Designの推奨値）
+ * ============================================================ */
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 52px;
+  padding: var(--space-3) var(--space-4);
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 500;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  /* 押下時のフィードバック */
+  transition: all 0.15s ease-in-out;
+  /* iOS Safariで角丸が崩れるのを防ぐ */
+  -webkit-appearance: none;
+}
+
+/* タップ時の沈みエフェクト */
+.btn:active {
+  transform: translateY(1px);
+  box-shadow: var(--shadow-sm);
+}
+
+/* プライマリボタン：濃紺の塗りつぶし */
+.btn-primary {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-primary:hover {
+  background-color: var(--color-primary-dark);
+}
+
+/* セカンダリボタン：白地に紺枠 */
+.btn-secondary {
+  background-color: var(--color-white);
+  color: var(--color-primary);
+  border: 2px solid var(--color-primary);
+}
+
+.btn-secondary:hover {
+  background-color: var(--color-info-bg);
+}
+
+/* テキストボタン：背景なし、文字色のみ */
+.btn-text {
+  background: transparent;
+  color: var(--color-gray-500);
+  font-size: 14px;
+  min-height: 40px;
+}
+
+.btn-text:disabled {
+  color: var(--color-gray-200);
+  cursor: not-allowed;
+}
+
+.btn + .btn {
+  margin-top: var(--space-3);
+}
+
+/* ============================================================
+ * 回答ボタン群（はい/いいえ/わからない）
+ * ============================================================ */
+.answer-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+  margin-bottom: var(--space-4);
+}
+
+.btn-answer {
+  background-color: var(--color-white);
+  border: 2px solid var(--color-gray-200);
+  color: var(--color-gray-700);
+  font-size: 17px;
+  font-weight: 600;
+  min-height: 60px;
+}
+
+.btn-answer .btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  margin-right: var(--space-3);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+/* はいボタン：成功色のアクセント */
+.btn-yes:hover,
+.btn-yes:focus {
+  border-color: var(--color-success);
+  background-color: var(--color-success-bg);
+}
+
+.btn-yes .btn-icon {
+  background-color: var(--color-success);
+  color: var(--color-white);
+}
+
+/* いいえボタン：危険色のアクセント */
+.btn-no:hover,
+.btn-no:focus {
+  border-color: var(--color-danger);
+  background-color: var(--color-danger-bg);
+}
+
+.btn-no .btn-icon {
+  background-color: var(--color-danger);
+  color: var(--color-white);
+}
+
+/* わからないボタン：中立色 */
+.btn-unknown:hover,
+.btn-unknown:focus {
+  border-color: var(--color-gray-500);
+  background-color: var(--color-gray-50);
+}
+
+.btn-unknown .btn-icon {
+  background-color: var(--color-gray-500);
+  color: var(--color-white);
+}
+
+/* ============================================================
+ * プログレスバー
+ * ============================================================ */
+.progress-wrapper {
+  margin-bottom: var(--space-5);
+}
+
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--color-gray-500);
+  margin-bottom: var(--space-2);
+}
+
+.progress-bar {
+  width: 100%;
+  height: 6px;
+  background-color: var(--color-gray-100);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-primary-light));
+  border-radius: 3px;
+  /* width変更時のなめらかなアニメーション */
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ============================================================
+ * 質問ボックス
+ * ============================================================ */
+.question-box {
+  background-color: var(--color-gray-50);
+  border-left: 4px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  padding: var(--space-4);
+  margin-bottom: var(--space-3);
+}
+
+.question-category {
+  font-size: 12px;
+  color: var(--color-primary);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  margin-bottom: var(--space-2);
+}
+
+.question-text {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-gray-900);
+  line-height: 1.5;
+  margin-bottom: var(--space-2);
+}
+
+.question-hint {
+  font-size: 13px;
+  color: var(--color-gray-500);
+  line-height: 1.5;
+}
+
+/* ============================================================
+ * ローディングスピナー
+ * ============================================================ */
+.loading-spinner {
+  width: 48px;
+  height: 48px;
+  margin: var(--space-6) auto var(--space-4);
+  border: 4px solid var(--color-gray-100);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ============================================================
+ * 結果画面：判定バッジ
+ * ============================================================ */
+.verdict-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-4);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* バッジのバリアント：JS側でクラスを付与 */
+.verdict-badge.permitted {
+  background-color: var(--color-success-bg);
+  color: var(--color-success);
+  border: 2px solid var(--color-success);
+}
+
+.verdict-badge.prohibited {
+  background-color: var(--color-danger-bg);
+  color: var(--color-danger);
+  border: 2px solid var(--color-danger);
+}
+
+.verdict-badge.conditional {
+  background-color: var(--color-warning-bg);
+  color: var(--color-warning);
+  border: 2px solid var(--color-warning);
+}
+
+.verdict-badge.review {
+  background-color: var(--color-info-bg);
+  color: var(--color-info);
+  border: 2px solid var(--color-info);
+}
+
+.verdict-icon {
+  font-size: 24px;
+  margin-right: var(--space-2);
+}
+
+/* ============================================================
+ * 結果画面：判定メッセージ
+ * ============================================================ */
+.verdict-message-box {
+  background-color: var(--color-gray-50);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-4);
+}
+
+.verdict-message {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--color-gray-700);
+}
+
+/* ============================================================
+ * 結果画面：個別チェック項目リスト
+ * ============================================================ */
+.checks-list {
+  margin-bottom: var(--space-4);
+}
+
+.check-item {
+  background-color: var(--color-white);
+  border: 1px solid var(--color-gray-100);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-3);
+  /* 左ボーダーで結果ステータスを視覚的に伝達 */
+  border-left-width: 4px;
+}
+
+.check-item.pass {
+  border-left-color: var(--color-success);
+}
+
+.check-item.fail {
+  border-left-color: var(--color-danger);
+}
+
+.check-item.warn {
+  border-left-color: var(--color-warning);
+}
+
+.check-item.not-applicable {
+  border-left-color: var(--color-gray-200);
+  opacity: 0.7;
+}
+
+.check-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--space-2);
+}
+
+.check-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-gray-900);
+  flex: 1;
+}
+
+.check-status {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+  margin-left: var(--space-2);
+}
+
+.check-status.pass {
+  background-color: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.check-status.fail {
+  background-color: var(--color-danger-bg);
+  color: var(--color-danger);
+}
+
+.check-status.warn {
+  background-color: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+
+.check-status.not-applicable {
+  background-color: var(--color-gray-100);
+  color: var(--color-gray-500);
+}
+
+.check-message {
+  font-size: 13px;
+  color: var(--color-gray-700);
+  margin-bottom: var(--space-2);
+  line-height: 1.5;
+}
+
+/* 法令出典の表示：小さく、控えめに */
+.check-legal {
+  font-size: 11px;
+  color: var(--color-gray-500);
+  background-color: var(--color-gray-50);
+  padding: var(--space-2);
+  border-radius: var(--radius-sm);
+  font-family: "SF Mono", Consolas, monospace;
+}
+
+.check-legal strong {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+/* ============================================================
+ * 結果画面：信頼度ボックス
+ * ============================================================ */
+.confidence-box {
+  background-color: var(--color-info-bg);
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  text-align: center;
+  margin-bottom: var(--space-5);
+  font-size: 13px;
+}
+
+.confidence-label {
+  color: var(--color-gray-500);
+}
+
+.confidence-value {
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+/* ============================================================
+ * 結果画面：アクション群
+ * ============================================================ */
+.result-actions {
+  margin-top: var(--space-4);
+}
+
+.footer-note {
+  text-align: center;
+  font-size: 11px;
+  color: var(--color-gray-500);
+  margin-top: var(--space-5);
+}
+
+.request-id {
+  font-family: "SF Mono", Consolas, monospace;
+  color: var(--color-gray-700);
+}
+
+/* ============================================================
+ * エラー画面
+ * ============================================================ */
+.error-icon {
+  font-size: 48px;
+  color: var(--color-danger);
+  margin: var(--space-6) 0 var(--space-3);
+}
