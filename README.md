@@ -55,4 +55,10 @@ graph TD
 - **Data Engineering**: CloudWatch Logs, Amazon S3, Amazon Athena (Planned)[cite: 2, 5]
 
 ---
+
+## 🚀 開発進捗（2026-05-10）
+バックエンドのコアロジックを「独立したモジュール」として実装。
+- **堅牢な設計**: `Enum` による状態管理と、異常値を弾くガード節の実装。
+- **スケーラビリティ**: 単発診断だけでなく、複数案件を連続処理するバッチ処理関数を構築。
+- **今後の展望**: FastAPI と連携させ、LINE フロントエンドからの診断リクエストをサーバーレスで処理予定。
 © 2026 Sato Kou. All Rights Reserved.
